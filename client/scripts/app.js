@@ -34,7 +34,7 @@ var app = {
     $.ajax({
       url: 'http://parse.sfm6.hackreactor.com',
       type: 'GET',
-      data: (room === undefined || room === '') ? { order: '-createdAt' } : { order: '-createdAt', where: '{"roomname": "'+room+'"}' },
+      data: (room === undefined || room === '') ? { order: '-createdAt' } : { order: '-createdAt', where: '{"roomname": "' + room + '"}' },
       contentType: 'application/json',
       success: function(data) {
         console.log('chatterbox: Message received');
@@ -68,7 +68,7 @@ var app = {
 
   handleSubmit: function() {
     $('#sendButton').on('click', function() {
-      console.log("test");
+      console.log('test');
       var message = {};
       message.username = window.location.search.slice(10);
       message.text = $('#messageInput').val();
