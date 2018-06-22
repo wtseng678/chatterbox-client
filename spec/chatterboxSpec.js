@@ -94,7 +94,6 @@ describe('chatterbox', function() {
           text: 'Never underestimate the power of the Schwartz!',
           roomname: 'lobby'
         };
-
         app.renderMessage(message);
 
         expect($('#chats').children().length).to.equal(1);
@@ -119,7 +118,6 @@ describe('chatterbox', function() {
         });
 
         app.init();
-
         $('#main').find('.username').trigger('click');
         expect(app.handleUsernameClick.called).to.be.true;
 
