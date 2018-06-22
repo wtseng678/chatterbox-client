@@ -54,7 +54,7 @@ var app = {
   renderMessage: function(message) {
     $('.post').remove();
     var {username, text, roomname} = message;
-    var element = $('<div class=' + (username === undefined || username.includes('<') || username.includes('$') ? 'anonymous' : username.split(" ").join()) + '>');
+    var element = $('<div class=' + (username === undefined || username.includes('<') || username.includes('$') ? 'anonymous' : username.split(' ').join()) + '>');
     element.text(username + ' [' + roomname + '] : ' + text + '</div>');
     $('#chats').append(element);
   },    
