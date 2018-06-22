@@ -30,11 +30,11 @@ var app = {
       }
     });
   },
-  fetch: function() {
+  fetch: function(room) {
     $.ajax({
       url: 'http://parse.sfm6.hackreactor.com',
       type: 'GET',
-      data: JSON.stringify(message),
+      data: (room === undefined || room === '') ? { order: '-createdAt' } : { order: '-createdAt', where: '{"roomname": "'+room+'"}' },
       contentType: 'application/json',
       success: function(data) {
         console.log('chatterbox: Message received');
@@ -54,7 +54,7 @@ var app = {
   renderMessage: function(message) {
     $('.post').remove();
     var {username, text, roomname} = message;
-    var element = $('<div class=' + (username === undefined || username.includes('<') || username.includes('$') ? 'anonymous' : username.split(' ').join()) + '>');
+    var element = $('<div class=\'username ' + (username === undefined || username.includes('<') || username.includes('$') ? 'anonymous' : username.split(' ').join()) + '\'>');
     element.text(username + ' [' + roomname + '] : ' + text + '</div>');
     $('#chats').append(element);
   },    
@@ -68,6 +68,7 @@ var app = {
 
   handleSubmit: function() {
     $('#sendButton').on('click', function() {
+      console.log("test");
       var message = {};
       message.username = window.location.search.slice(10);
       message.text = $('#messageInput').val();

@@ -28,9 +28,25 @@
     <div id="main">
       <h1>chatterbox</h1>
       <!-- Your HTML goes here! -->
-
-      
+      <div class="messageBox">
+      <input type="text" id="messageInput" placeholder="Type message here" size="70"></input>
+        <button id="sendButton">Submit Messages</button>
+        <div>
+          <input type="text" id="roomInput" placeholder="Choose a chatroom" size="15"></input>
+          <button id="roomButton">Switch Rooms</button>
+        </div>
+      </div>
     </div>
+    <style>
+      .post {
+        font-size: 12px;
+      }
+      .post:hover{
+        color: steelblue;
+        cursor: pointer;
+        cursor: hand;
+      }
+    </style>
     <div id="chats"></div>
   </body>
 </html>
