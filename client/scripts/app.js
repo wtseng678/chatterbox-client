@@ -1,7 +1,7 @@
-var app = {
+/*var app = {
   roomName: undefined,
   friends: {},
-  server: 'http://parse.sfm6.hackreactor.com',
+  server: 'http://parse.sfm6.hackreactor.com/chatterbox/classes/messages',
   init: function() {
     app.username = window.location.search.substr(10);
     app.$main = $('#main');
@@ -10,35 +10,42 @@ var app = {
     app.$roomSelect = $('#roomSelect');
     app.$send = $('#send');
     app.$main.on('click', '.username', app.handleUsernameClick);
-    app.$send.on('submit', app.handleSubmit);
-    app.$roomSelect.on('change', app.roomChange);
+    app.handleSubmit();
+    //app.renderRoom();
+    //app.$roomSelect.on('change', app.roomChange);
     app.fetch(app.roomName);
-    setInterval(function() { app.fetch(app.roomName); }, 1000);
+    //setInterval(function() { app.fetch(app.roomName); }, 1000);
   },
+
+  // string escaping: return str.replace(/&/g, '&amp;').replace(</g, '&lt;');
+  // 
   send: function(message) {
+    //console.log(JSON.stringify(message));
     $.ajax({
-      url: 'http://parse.sfm6.hackreactor.com',
+      url: app.server,
       type: 'POST',
       data: JSON.stringify(message),
       contentType: 'application/json',
       success: function(data) {
-        console.log('chatterbox: Message sent');
-        app.renderMessage(data);
+        //console.log('chatterbox: Message sent');
+        message.createdAt = data.createdAt;
+        app.renderMessage(message);
       },
       error: function(data) {
         console.error('chatterbox: Failed to send message');
       }
     });
   },
+
   fetch: function(room) {
     $.ajax({
-      url: 'http://parse.sfm6.hackreactor.com',
+      url: app.server,
       type: 'GET',
       data: (room === undefined || room === '') ? { order: '-createdAt' } : { order: '-createdAt', where: '{"roomname": "' + room + '"}' },
       contentType: 'application/json',
       success: function(data) {
-        console.log('chatterbox: Message received');
-        app.renderMessage(data);
+        //console.log('chatterbox: Message received');
+        app.parse(data, data.results.length);
       },
       error: function(data) {
         console.error('chatterbox: Failed to receive message');
@@ -47,33 +54,57 @@ var app = {
   },
 
   clearMessages: function() {
-    $('#chats').html('');
+    //$(document).ready(function() {
+      //$('#roomButton').on('click', function() {
+        $('#chats').html('');
+        //renderRoom();
+      //});
+    //})
   },
 
-
-  renderMessage: function(message) {
+  parse: function(data, length) {
     $('.post').remove();
-    var {username, text, roomname} = message;
-    var element = $('<div class=\'username ' + (username === undefined || username.includes('<') || username.includes('$') ? 'anonymous' : username.split(' ').join()) + '\'>');
-    element.text(username + ' [' + roomname + '] : ' + text + '</div>');
+    for (var i = 0; i < length; i++) {
+      var {username, roomname, text, createdAt} = data.results[i]; //data.results[i];
+      var element = $('<div class=\'username ' + (username === undefined || username.includes('<') || username.includes('$') ? 'anonymous' : username.split(' ').join()) + '\'>');
+      element.text(createdAt + ": " + _.escape(username) + ' [' + (roomname === undefined || username.includes('<') || username.includes('$') ? roomname = 'lobby' : roomname) + '] ' + ' : ' + text);
+      $('#chats').append(element);      
+    }
+  },
+
+  renderMessage: function(data) {
+    $('.post').remove();
+    var {username, roomname, text, createdAt} = data; //data.results[i];
+    var element = $('<div class=\'username ' + (username === undefined || username.includes('<') || username.includes('$') ? username = 'anonymous' : username.split(' ').join()) + '\'>');
+    element.text(createdAt + ": " + _.escape(username) + ' [' + (roomname === undefined || username.includes('<') || username.includes('$') ? roomname = 'lobby' : roomname) + '] ' + ' : ' + text);
     $('#chats').append(element);
   },    
 
 
   renderRoom: function(room) {
-    if (room !== undefined && room !== '') {
-      $('#roomSelect').append('<option value=' + room + '>' + room + '</option>');
-    }
+    /* /$(document).ready(function() {
+      $('#roomButton').on('click', function() {
+        console.log(room);
+        app.roomName=$('#roomInput').val();
+        app.fetch(app.roomName);
+        //app.clearMessages();
+        if (room !== undefined && room !== '' && !(room.includes('<') || room.includes('$'))) {
+          $('#roomSelect').append('<option value=' + room + '>' + room + '</option>');
+        }
+      });
+    });* /
+    roomName = room;
   }, 
 
   handleSubmit: function() {
-    $('#sendButton').on('click', function() {
-      console.log('test');
-      var message = {};
-      message.username = window.location.search.slice(10);
-      message.text = $('#messageInput').val();
-      message.roomname = app.roomName;
-      app.send(message);            
+    $(document).ready(function() {
+      $('#sendButton').on('click', function() {
+        var message = {};
+        message.username = window.location.search.slice(10);
+        message.text = $('#messageInput').val();
+        message.roomname = app.roomName;
+        app.send(message);            
+      });
     });
   },  
 
@@ -86,4 +117,136 @@ var app = {
       var $usernames = $(selector).addClass('friend');
     }
   }  
-};
+};*/
+
+class App {
+  constructor() {
+    this.roomName = undefined,
+    this.rooms = {},
+    this.friends = [],
+    this.server = 'http://parse.sfm6.hackreactor.com/chatterbox/classes/messages';
+  }
+
+  init() {
+    $(document).ready(function() {
+      $('refresh').on('click', function() {
+        this.fetch();
+      });
+    });
+  }
+
+  send(message) {
+    $.ajax({
+      url: this.server,
+      type: 'POST',
+      data: JSON.stringify(message),
+      contentType: 'application/json',
+      success: (data) => {
+        message.createdAt = data.createdAt;
+        this.renderMessage(message);
+        this.fetch();
+      },
+      error: function(data) {
+        console.error('chatterbox: Failed to send message');
+      }
+    })
+  }
+  fetch(room) {
+    $.ajax({
+      url: this.server,
+      type: 'GET',
+      data: (room === undefined || room === '') ? { order: '-createdAt' } : { order: '-createdAt', where: '{"roomname": "' + room + '"}' },
+      contentType: 'application/json',
+      success: (data) => {
+        this.clearMessages();
+        _.each(data.results, (value) => {
+          this.renderMessage(value);
+        });
+      },
+      error: function (data) {
+        console.error('chatterbox: Failed to fetch messages');
+      }
+    });
+  }
+
+  clearMessages() {
+    $('#chats').empty();
+  }
+
+  renderMessage(message) {
+    var selectedRoom = $("#roomSelect option:selected").val();
+    if (!selectedRoom) {
+      selectedRoom = 'lobby';
+    }
+
+    var text = this.friends.includes(_.escape(message.username)) ? '<strong>' + _.escape(message.text) + '</strong>' : _.escape(message.text);
+    $('#chats').append('<div class="chat"><p>' + '<span class="createdAt">' + _.escape(message.createdAt) + '</span>' + '<span class="username" id="' + _.escape(message.username) + '" data-username> ' + _.escape(message.username) + '</span> <span class="roomname" data-roomname>[' + _.escape(message.roomname) + ']</span>'  + ' : <span id="message ' + _.escape(message.username) + '">' + text + '</span></p></div>');
+    this.renderRoom(_.escape(message.roomname));
+    $('.username').click((value) => {this.addFriend(_.escape(value.target.id));});
+  }
+
+// expand renderRoom to filter
+
+  renderRoom(room) {
+    if (room !== undefined && room !== '' && this.rooms[room] === undefined) {
+      $('#roomSelect').append('<option value="' + _.escape(room) + '">' + _.escape(room) + '</option>');
+      this.rooms[room] = true;
+    }
+  }
+
+  changeRoom(e) { // adds a new room
+    e.preventDefault();
+    $('#roomSelect').append('<option value="' + _.escape($('.change').val()) + '">' + _.escape($('.change').val()) + '</option>');
+    this.rooms[$('.change').val()] = true;    
+  }
+
+  addFriend(friend) {    
+    if (!this.friends.includes(friend)) {
+      this.friends.push(friend); 
+      $('span #message ' + friend).addClass('friend');
+      // still need to make the messages bold
+      $('span #message ' + friend).wrap('<strong></strong>');
+      //debugger
+      this.fetch();
+    }
+  }
+
+  handleSubmit(e) {
+    e.preventDefault();
+    this.send({
+      username: $('.username2').text(),
+      text: $('.message2').val(),
+      roomname: $('#roomSelect').val()
+    });
+  }
+
+
+
+}
+
+$( document ).ready(function() {
+    var app = new App();
+    app.init();
+    app.fetch();
+
+    $('.refresh').on('click', function() {
+      app.fetch();
+    });
+
+    $('.username2').text(window.location.search.substr(10));
+
+    $('.username').click(function(event) {
+      console.log("test");
+      app.addFriend(event);
+    });
+
+
+    $('.changeRoom').click(function(event) {
+      app.changeRoom(event);
+    })
+    
+
+    $('.submit').click( function(event) {
+        app.handleSubmit(event);
+    });
+});

@@ -7,7 +7,7 @@ body {
 
 #main, #chats {
     width: 500px;
-    margin: auto;
+    margin: left;
     text-align: left;
     background: white;
     padding: 50px 60px;
@@ -66,7 +66,7 @@ form input[type=text] {
 }
 
 .chat .username {
-    font-weight: 800;
+    font-weight: 400;
 }
 
 .chat:hover {
@@ -84,7 +84,8 @@ form input[type=text] {
 }
 
 .friend {
-    color: #fff;
-    background-color: #0090da;
+    font-weight: bold;
+    /*color: #fff;
+    background-color: #0090da;*/
 }
 

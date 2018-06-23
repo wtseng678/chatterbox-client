@@ -9,7 +9,12 @@
     <script src="bower_components/jquery/dist/jquery.js"></script>
     <script src="bower_components/underscore/underscore.js"></script>    
     <script src="bower_components/backbone/backbone.js"></script>
+    <script src="env/config.js"></script>
+    <script src="scripts/app.js"></script>
     <script>
+      //app.init();
+      // TODO: create containers for each message
+
       // YOU DO NOT NEED TO EDIT THIS CODE
       if (!/(&|\?)username=/.test(window.location.search)) {
         var newSearch = window.location.search;
@@ -21,32 +26,36 @@
       }
     </script>
     <!-- your scripts -->
-    <script src="env/config.js"></script>
-    <script src="scripts/app.js"></script>
+
   </head>
   <body>
     <div id="main">
-      <h1>chatterbox</h1>
-      <!-- Your HTML goes here! -->
-      <div class="messageBox">
-      <input type="text" id="messageInput" placeholder="Type message here" size="70"></input>
-        <button id="sendButton">Submit Messages</button>
-        <div>
-          <input type="text" id="roomInput" placeholder="Choose a chatroom" size="15"></input>
-          <button id="roomButton">Switch Rooms</button>
+            
+      
+      <select id="roomSelect">
+        <option value="lobby">lobby</option>
+      </select>
+      
+      <br>Username: <span class="username2"> </span><br>
+        
+      <form action="#" id="send" method="post">
+        Chat message:
+        <input type='text' name='message2' class="message2">
+        <div id="send">
+          <input class="submit" type="submit" value="Submit">
         </div>
-      </div>
+      </form>
+
+      <form action="#" id="change" method="post">
+        Add a room:
+        <input type='text' name='changeRoom' class="change">
+        <div id="change">
+          <input class="changeRoom" type="submit" value="Add">
+        </div>
+      </form>
+      <button type="button" class="refresh">Refresh</button>
+
+      <div id="chats"></div>
     </div>
-    <style>
-      .post {
-        font-size: 12px;
-      }
-      .post:hover{
-        color: steelblue;
-        cursor: pointer;
-        cursor: hand;
-      }
-    </style>
-    <div id="chats"></div>
   </body>
 </html>
