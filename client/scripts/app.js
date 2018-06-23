@@ -132,6 +132,7 @@ class App {
       $('refresh').on('click', function() {
         this.fetch();
       });
+      
     });
   }
 
@@ -149,17 +150,19 @@ class App {
       error: function(data) {
         console.error('chatterbox: Failed to send message');
       }
-    })
+    });
   }
-  fetch(room) {
+  fetch() {
     $.ajax({
       url: this.server,
       type: 'GET',
-      data: (room === undefined || room === '') ? { order: '-createdAt' } : { order: '-createdAt', where: '{"roomname": "' + room + '"}' },
+      data: (this.roomName === undefined || this.roomName === '') ? { order: '-createdAt' } : { order: '-createdAt', where: '{"roomname": "' + this.roomName + '"}' },
       contentType: 'application/json',
       success: (data) => {
         this.clearMessages();
-        _.each(data.results, (value) => {
+        //console.log(data.results);
+        // 
+        _.each(/*_.filter(data.results, function(obj) { return obj.roomname === room || obj.roomname === undefined })*/data.results, (value) => {
           this.renderMessage(value);
         });
       },
@@ -174,18 +177,25 @@ class App {
   }
 
   renderMessage(message) {
-    var selectedRoom = $("#roomSelect option:selected").val();
-    if (!selectedRoom) {
-      selectedRoom = 'lobby';
+    if (this.roomName === undefined || this.roomName === message.roomname) {
+      var text = this.friends.includes(_.escape(message.username)) ? '<strong>' + _.escape(message.text) + '</strong>' : _.escape(message.text);
+      $('#chats').append('<div class="chat"><p>' + '<span class="createdAt">' + _.escape(message.createdAt) + '</span>' + '<span class="username" id="' + _.escape(message.username) + '" data-username> ' + _.escape(message.username) + '</span> <span class="roomname" data-roomname>[' + _.escape(message.roomname) + ']</span>' + ' : <span id="message ' + _.escape(message.username) + '">' + text + '</span></p></div>');
+      this.renderRoom(_.escape(message.roomname));
+      $('.username').click((value) => { this.addFriend(_.escape(value.target.id)); });
     }
-
-    var text = this.friends.includes(_.escape(message.username)) ? '<strong>' + _.escape(message.text) + '</strong>' : _.escape(message.text);
-    $('#chats').append('<div class="chat"><p>' + '<span class="createdAt">' + _.escape(message.createdAt) + '</span>' + '<span class="username" id="' + _.escape(message.username) + '" data-username> ' + _.escape(message.username) + '</span> <span class="roomname" data-roomname>[' + _.escape(message.roomname) + ']</span>'  + ' : <span id="message ' + _.escape(message.username) + '">' + text + '</span></p></div>');
-    this.renderRoom(_.escape(message.roomname));
-    $('.username').click((value) => {this.addFriend(_.escape(value.target.id));});
   }
 
-// expand renderRoom to filter
+  // expand renderRoom to filter
+
+  filterRoom(room) {
+    var room = $('#roomSelect option:selected').val();
+    if (!room) {
+      room = 'lobby';
+    } 
+    this.clearMessages();
+    this.roomName = room;
+    this.fetch();
+  }
 
   renderRoom(room) {
     if (room !== undefined && room !== '' && this.rooms[room] === undefined) {
@@ -204,9 +214,7 @@ class App {
     if (!this.friends.includes(friend)) {
       this.friends.push(friend); 
       $('span #message ' + friend).addClass('friend');
-      // still need to make the messages bold
       $('span #message ' + friend).wrap('<strong></strong>');
-      //debugger
       this.fetch();
     }
   }
@@ -224,29 +232,37 @@ class App {
 
 }
 
-$( document ).ready(function() {
-    var app = new App();
-    app.init();
+$(document).ready(function() {
+  var app = new App();
+  app.init();
+  app.fetch();
+
+  $('.refresh').on('click', function() {
     app.fetch();
+  });
 
-    $('.refresh').on('click', function() {
-      app.fetch();
-    });
+  // To see all messages again
+  /*$('.reset').on('click', function() {
+    this.roomName === undefined;
+    app.fetch();
+  });*/
 
-    $('.username2').text(window.location.search.substr(10));
+  $('select').on('change', function(value) {
+    app.filterRoom(value);
+  });
 
-    $('.username').click(function(event) {
-      console.log("test");
-      app.addFriend(event);
-    });
+  $('.username2').text(window.location.search.substr(10));
+
+  $('.username').click(function(event) {
+    app.addFriend(event);
+  });
 
 
-    $('.changeRoom').click(function(event) {
-      app.changeRoom(event);
-    })
-    
-
-    $('.submit').click( function(event) {
-        app.handleSubmit(event);
-    });
+  $('.changeRoom').click(function(event) {
+    app.changeRoom(event);
+  });
+  
+  $('.submit').click( function(event) {
+    app.handleSubmit(event);
+  });
 });

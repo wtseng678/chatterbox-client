@@ -7,7 +7,7 @@ body {
 
 #main, #chats {
     width: 500px;
-    margin: left;
+    margin: auto;
     text-align: left;
     background: white;
     padding: 50px 60px;
